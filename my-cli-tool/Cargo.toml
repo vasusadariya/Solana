@@ -1,7 +1,9 @@
 [package]
 name = "my-cli-tool"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-clap = "4.5.42"
+clap = { version = "4", features = ["derive"] }
+anyhow = "1.0"
+directories = "5.0"
