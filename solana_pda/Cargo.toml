@@ -1,0 +1,9 @@
+[package]
+name = "solana_pda_example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow        = "1.0"
+solana-client = "2.3"
+solana-sdk    = "2.3"

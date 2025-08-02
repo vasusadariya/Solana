@@ -1,0 +1,30 @@
+# === Rust & Cargo ===
+/target
+**/*.rs.bk
+Cargo.lock # optional — commit if you're building a binary, ignore if it's a lib
+
+# === Solana Keypair ===
+/**/id.json
+**/id.json
+**/*.keypair.json
+**/.keypair
+
+# === IDE & OS Specific ===
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp
+
+# === Backup files ===
+*.swp
+*.swo
+*~
+*.bak
+
+# === Node Modules (if used with frontend) ===
+node_modules/
+
+# === Env / Secrets ===
+.env
+.env.local
