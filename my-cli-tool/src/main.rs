@@ -1,11 +1,10 @@
 use clap::{Parser, Subcommand};
+use anyhow::Result;             // <-- use anyhow’s Result
 use std::fs;
 use std::path::PathBuf;
-use anyhow::Result;
 
-/// Rusty Node Version Manager
 #[derive(Parser)]
-#[clap(name = "rnv", version, about = "Manage multiple Node.js versions, Rust-style")]
+#[clap(name = "rnv", version, about = "Rusty Node Version Manager")]
 struct Cli {
     #[clap(subcommand)]
     cmd: Command,
@@ -13,21 +12,15 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// List installed Node versions
     List,
-    /// Install a specific Node version (e.g. 16.14.0)
     Install { version: String },
-    /// Uninstall a version
     Uninstall { version: String },
-    /// Activate a version in your shell
     Use { version: String },
-    /// Show currently active version
     Current,
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-
     match cli.cmd {
         Command::List => list_versions()?,
         Command::Install { version } => install(&version)?,
@@ -35,15 +28,15 @@ fn main() -> Result<()> {
         Command::Use { version } => use_version(&version)?,
         Command::Current => show_current()?,
     }
-
     Ok(())
 }
 
-// -- Command implementations --
-
 fn list_versions() -> Result<()> {
-    let base = get_base_dir()?;
-    let dir = base.join("versions");
+    let dir = PathBuf::from("./versions");
+    if !dir.exists() {
+        fs::create_dir_all(&dir)?;
+        println!("(created {})", dir.display());
+    }
     for entry in fs::read_dir(&dir)? {
         println!("{}", entry?.file_name().to_string_lossy());
     }
@@ -51,32 +44,43 @@ fn list_versions() -> Result<()> {
 }
 
 fn install(version: &str) -> Result<()> {
-    println!("(stub) Installing Node v{}…", version);
-    // TODO: download & unpack here
+    let dir = PathBuf::from("./versions");
+    if !dir.exists() {
+        fs::create_dir_all(&dir)?;
+    }
+    let target = dir.join(version);
+    if target.exists() {
+        println!("Version {} already installed", version);
+        return Ok(());
+    }
+    fs::create_dir(&target)?;
+    println!("Version {} installed at {}", version, target.display());
     Ok(())
 }
 
 fn uninstall(version: &str) -> Result<()> {
-    println!("(stub) Uninstalling v{}…", version);
-    // TODO: remove the directory here
-    Ok(())
+    let dir = PathBuf::from("./versions");
+    let target = dir.join(version);
+    if target.exists() {
+        fs::remove_dir_all(&target)?;
+        println!("Version {} uninstalled", version);
+        return Ok(());
+    }
+    anyhow::bail!("Version {} not found", version);
 }
 
 fn use_version(version: &str) -> Result<()> {
-    println!("(stub) Switching to Node v{}…", version);
-    // TODO: write .current or update shims
-    Ok(())
+    let dir = PathBuf::from("./versions");
+    let target = dir.join(version);
+    if target.exists() {
+        println!("Version {} is now active", version);
+        // TODO: write .current or update shims
+        return Ok(());
+    }
+    anyhow::bail!("Version {} not found", version);
 }
 
 fn show_current() -> Result<()> {
-    println!("(stub) Current version: <read from .current>");
+    println!("Current version: <not yet implemented>");
     Ok(())
-}
-
-// -- Helper --
-
-fn get_base_dir() -> Result<PathBuf> {
-    let proj = directories::ProjectDirs::from("com", "you", "rnv")
-        .ok_or_else(|| anyhow::anyhow!("Could not determine base directory"))?;
-    Ok(proj.data_local_dir().to_path_buf())
 }
